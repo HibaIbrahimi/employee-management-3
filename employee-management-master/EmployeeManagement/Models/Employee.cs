@@ -7,21 +7,40 @@ namespace EmployeeManagement.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
-        public string FirstName { get; set; }
+        [StringLength(
+            50,
+            ErrorMessage = "First name must be between 1 and 50 characters.",
+            MinimumLength = 1
+        )]
+        public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Last name is required")]
-        public string LastName { get; set; }
+        [StringLength(
+            50,
+            ErrorMessage = "Last name must be between 1 and 50 characters.",
+            MinimumLength = 1
+        )]
+        public string LastName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Invalid Email Adress")]
-        
-        public string Email { get; set; }
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        [StringLength(254, ErrorMessage = "Email must be 254 characters or less.")]
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Phone is required")]
-        [Length(8, 20)]
-        public string Phone { get; set; }
+        [StringLength(
+            20,
+            ErrorMessage = "Phone must be between 8 and 20 characters.",
+            MinimumLength = 8
+        )]
+        public string Phone { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Position is required")]
-        public string Position { get; set; }
+        [StringLength(
+            100,
+            ErrorMessage = "Position must be between 1 and 100 characters.",
+            MinimumLength = 1
+        )]
+        public string Position { get; set; } = string.Empty;
     }
 }

@@ -1,8 +1,8 @@
-﻿using EmployeeManagement.Models;
+using EmployeeManagement.Models;
 
-namespace EmployeeManagement.Repositories
+namespace EmployeeManagement.Services
 {
-    public interface IEmployeeRepository
+    public interface IEmployeeService
     {
         Task<IEnumerable<Employee>> GetAllAsync();
         Task<Employee?> GetByIdAsync(int id);

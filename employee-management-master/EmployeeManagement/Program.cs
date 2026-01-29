@@ -1,7 +1,7 @@
 using EmployeeManagement.Data;
 using EmployeeManagement.Repositories;
+using EmployeeManagement.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.InMemory;
 
 namespace EmployeeManagement
 {
@@ -11,32 +11,41 @@ namespace EmployeeManagement
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Configuration de la base de données (InMemory pour simplifier)
             builder.Services.AddDbContext<AppDbContext>(
                 options => options.UseInMemoryDatabase("EmployeeDB")
-             );
+            );
 
+            // Configuration CORS (Angular en local)
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("MyCors", builder =>
-                {
-                    builder.WithOrigins("http://localhost:4200")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-                });
+                options.AddPolicy(
+                    "MyCors",
+                    policyBuilder =>
+                    {
+                        policyBuilder
+                            .WithOrigins("http://localhost:4200")
+                            .AllowAnyMethod()
+                            .AllowAnyHeader();
+                    }
+                );
             });
 
-            // add the employee repository to the DI ( we gonna have a new instance of EmployeeRepo
+            // Injection du Repository (accès aux données)
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+
+            // Injection du Service (logique métier)
+            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
             builder.Services.AddControllers();
 
-            //about swagger
+            // Swagger
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            if(app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
@@ -45,9 +54,11 @@ namespace EmployeeManagement
                     c.RoutePrefix = string.Empty;
                 });
             }
-            
+
+            // Activer CORS
             app.UseCors("MyCors");
 
+            // Mapper les controllers
             app.MapControllers();
 
             app.Run();
