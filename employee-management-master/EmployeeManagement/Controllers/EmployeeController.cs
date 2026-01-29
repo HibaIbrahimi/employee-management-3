@@ -27,7 +27,7 @@ namespace EmployeeManagement.Controllers
         // GET: api/employee/{id}
         // Retourne un employé par Id
         [HttpGet("{id}")]
-        public async Task<ActionResult<EmployeeReadDto>> GetEmployeeById(int id)
+        public async Task<ActionResult<EmployeeReadDto>> GetEmployeeById(Guid id)
         {
             var employee = await _employeeService.GetByIdAsync(id);
 
@@ -56,7 +56,7 @@ namespace EmployeeManagement.Controllers
         // Met à jour un employé à partir d'un DTO de mise à jour
         [HttpPut("{id}")]
         public async Task<ActionResult<EmployeeReadDto>> UpdateEmployeAsync(
-            int id,
+            Guid id,
             [FromBody] EmployeeUpdateDto dto
         )
         {
@@ -77,7 +77,7 @@ namespace EmployeeManagement.Controllers
         // DELETE: api/employee/{id}
         // Supprime un employé
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteEmployeeById(int id)
+        public async Task<ActionResult> DeleteEmployeeById(Guid id)
         {
             try
             {

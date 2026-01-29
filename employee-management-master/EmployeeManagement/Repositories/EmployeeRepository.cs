@@ -22,7 +22,7 @@ namespace EmployeeManagement.Repositories
         }
 
         // Récupérer un employé par son Id
-        public async Task<Employee?> GetByIdAsync(int id)
+        public async Task<Employee?> GetByIdAsync(Guid id)
         {
             return await _context.Employees.FindAsync(id);
         }
@@ -43,7 +43,7 @@ namespace EmployeeManagement.Repositories
 
         // Supprimer un employé par son Id
         // Le repository ne décide pas si l'employé existe ou non
-        public async Task DeleteEmployeeAsync(int id)
+        public async Task DeleteEmployeeAsync(Guid id)
         {
             var employeeInDb = await _context.Employees.FindAsync(id);
 

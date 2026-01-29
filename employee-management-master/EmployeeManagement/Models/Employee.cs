@@ -4,7 +4,7 @@ namespace EmployeeManagement.Models
 {
     public class Employee
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
         [StringLength(

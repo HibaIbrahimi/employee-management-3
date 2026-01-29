@@ -6,9 +6,9 @@ namespace EmployeeManagement.Services
     public interface IEmployeeService
     {
         Task<IEnumerable<EmployeeReadDto>> GetAllAsync();
-        Task<EmployeeReadDto?> GetByIdAsync(int id);
+        Task<EmployeeReadDto?> GetByIdAsync(Guid id);
         Task<EmployeeReadDto> AddEmployeeAsync(EmployeeCreateDto dto);
-        Task<EmployeeReadDto> UpdateEmployeeAsync(int id, EmployeeUpdateDto dto);
-        Task DeleteEmployeeAsync(int id);
+        Task<EmployeeReadDto> UpdateEmployeeAsync(Guid id, EmployeeUpdateDto dto);
+        Task DeleteEmployeeAsync(Guid id);
     }
 }
