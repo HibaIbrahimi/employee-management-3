@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using EmployeeManagement.Models;
+﻿using EmployeeManagement.DTOs;
 using EmployeeManagement.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagement.Controllers
 {
@@ -16,86 +16,78 @@ namespace EmployeeManagement.Controllers
         }
 
         // GET: api/employee
-        // Récupérer la liste de tous les employés
+        // Retourne la liste des employés (DTO de lecture)
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Employee>>> GetAllEmployeeAsync()
+        public async Task<ActionResult<IEnumerable<EmployeeReadDto>>> GetAllEmployeeAsync()
         {
             var allEmployees = await _employeeService.GetAllAsync();
             return Ok(allEmployees);
         }
 
         // GET: api/employee/{id}
-        // Récupérer un employé par son Id
+        // Retourne un employé par Id
         [HttpGet("{id}")]
-        public async Task<ActionResult<Employee>> GetEmployeeById(int id)
+        public async Task<ActionResult<EmployeeReadDto>> GetEmployeeById(int id)
         {
             var employee = await _employeeService.GetByIdAsync(id);
 
             if (employee == null)
-            {
                 return NotFound();
-            }
 
             return Ok(employee);
         }
 
         // POST: api/employee
-        // Créer un nouvel employé
+        // Crée un employé à partir d'un DTO de création
         [HttpPost]
-        public async Task<ActionResult<Employee>> CreateEmployee(Employee employee)
+        public async Task<ActionResult<EmployeeReadDto>> CreateEmployee(
+            [FromBody] EmployeeCreateDto dto
+        )
         {
-            if (ModelState.IsValid == false)
-            {
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            }
 
-            await _employeeService.AddEmployeeAsync(employee);
+            var created = await _employeeService.AddEmployeeAsync(dto);
 
-            return CreatedAtAction(nameof(GetEmployeeById), new { id = employee.Id }, employee);
+            return CreatedAtAction(nameof(GetEmployeeById), new { id = created.Id }, created);
         }
 
         // PUT: api/employee/{id}
-        // Mettre à jour un employé existant
+        // Met à jour un employé à partir d'un DTO de mise à jour
         [HttpPut("{id}")]
-        public async Task<ActionResult<Employee>> UpdateEmployeAsync(int id, Employee employee)
+        public async Task<ActionResult<EmployeeReadDto>> UpdateEmployeAsync(
+            int id,
+            [FromBody] EmployeeUpdateDto dto
+        )
         {
-            if (id != employee.Id)
-            {
-                return BadRequest("L'id de l'URL ne correspond pas à l'id de l'employé.");
-            }
-
-            if (ModelState.IsValid == false)
-            {
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            }
 
             try
             {
-                await _employeeService.UpdateEmployeeAsync(employee);
+                var updated = await _employeeService.UpdateEmployeeAsync(id, dto);
+                return Ok(updated);
             }
             catch (KeyNotFoundException)
             {
                 return NotFound();
             }
-
-            return CreatedAtAction(nameof(GetEmployeeById), new { id = employee.Id }, employee);
         }
 
         // DELETE: api/employee/{id}
-        // Supprimer un employé par son Id
+        // Supprime un employé
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteEmployeeById(int id)
         {
             try
             {
                 await _employeeService.DeleteEmployeeAsync(id);
+                return NoContent();
             }
             catch (KeyNotFoundException)
             {
                 return NotFound();
             }
-
-            return NoContent();
         }
     }
 }

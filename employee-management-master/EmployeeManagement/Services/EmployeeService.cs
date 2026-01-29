@@ -1,10 +1,10 @@
+using EmployeeManagement.DTOs;
 using EmployeeManagement.Models;
 using EmployeeManagement.Repositories;
 
 namespace EmployeeManagement.Services
 {
-    // Service = couche métier (Business Logic)
-    // C'est ici que l'on prend les décisions (existence, erreurs, règles)
+    // Service = couche métier : validations métier + mapping Entity <-> DTO
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _repository;
@@ -14,78 +14,92 @@ namespace EmployeeManagement.Services
             _repository = repository;
         }
 
-        // Retourner tous les employés
-        public async Task<IEnumerable<Employee>> GetAllAsync()
+        // Mapper Entity -> ReadDto
+        private static EmployeeReadDto MapToReadDto(Employee e)
         {
-            return await _repository.GetAllAsync();
+            return new EmployeeReadDto
+            {
+                Id = e.Id,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                Email = e.Email,
+                Phone = e.Phone,
+                Position = e.Position
+            };
         }
 
-        // Retourner un employé par son Id
-        public async Task<Employee?> GetByIdAsync(int id)
+        // Mapper CreateDto -> Entity
+        private static Employee MapCreateDtoToEntity(EmployeeCreateDto dto)
+        {
+            return new Employee
+            {
+                FirstName = dto.FirstName.Trim(),
+                LastName = dto.LastName.Trim(),
+                Email = dto.Email.Trim(),
+                Phone = dto.Phone.Trim(),
+                Position = dto.Position.Trim()
+            };
+        }
+
+        public async Task<IEnumerable<EmployeeReadDto>> GetAllAsync()
+        {
+            var employees = await _repository.GetAllAsync();
+            return employees.Select(MapToReadDto);
+        }
+
+        public async Task<EmployeeReadDto?> GetByIdAsync(int id)
         {
             if (id <= 0)
-            {
                 return null;
-            }
 
-            return await _repository.GetByIdAsync(id);
+            var employee = await _repository.GetByIdAsync(id);
+            if (employee == null)
+                return null;
+
+            return MapToReadDto(employee);
         }
 
-        // Ajouter un employé
-        public async Task AddEmployeeAsync(Employee employee)
+        public async Task<EmployeeReadDto> AddEmployeeAsync(EmployeeCreateDto dto)
         {
-            if (employee == null)
-            {
-                throw new ArgumentNullException(nameof(employee));
-            }
+            // Ici on peut ajouter des règles métier (ex: email unique) plus tard
 
+            var employee = MapCreateDtoToEntity(dto);
             await _repository.AddEmployeeAsync(employee);
+
+            // Après SaveChangesAsync, l'Id est rempli
+            return MapToReadDto(employee);
         }
 
-        // Mettre à jour un employé
-        public async Task UpdateEmployeeAsync(Employee employee)
+        public async Task<EmployeeReadDto> UpdateEmployeeAsync(int id, EmployeeUpdateDto dto)
         {
-            if (employee == null)
-            {
-                throw new ArgumentNullException(nameof(employee));
-            }
+            if (id <= 0)
+                throw new ArgumentException("Id de l'employé invalide.", nameof(id));
 
-            if (employee.Id <= 0)
-            {
-                throw new ArgumentException("Id de l'employé invalide.");
-            }
+            // Vérifier existence
+            var existing = await _repository.GetByIdAsync(id);
+            if (existing == null)
+                throw new KeyNotFoundException($"Employé avec l'id {id} introuvable.");
 
-            // Vérifier si l'employé existe avant la mise à jour
-            var existingEmployee = await _repository.GetByIdAsync(employee.Id);
-            if (existingEmployee == null)
-            {
-                throw new KeyNotFoundException($"Employé avec l'id {employee.Id} introuvable.");
-            }
+            // Appliquer mise à jour (on garde la même entity tracked)
+            existing.FirstName = dto.FirstName.Trim();
+            existing.LastName = dto.LastName.Trim();
+            existing.Email = dto.Email.Trim();
+            existing.Phone = dto.Phone.Trim();
+            existing.Position = dto.Position.Trim();
 
-            // Mise à jour des champs
-            existingEmployee.FirstName = employee.FirstName;
-            existingEmployee.LastName = employee.LastName;
-            existingEmployee.Email = employee.Email;
-            existingEmployee.Phone = employee.Phone;
-            existingEmployee.Position = employee.Position;
+            await _repository.UpdateEmployeeAsync(existing);
 
-            await _repository.UpdateEmployeeAsync(existingEmployee);
+            return MapToReadDto(existing);
         }
 
-        // Supprimer un employé
         public async Task DeleteEmployeeAsync(int id)
         {
             if (id <= 0)
-            {
-                throw new ArgumentException("Id de l'employé invalide.");
-            }
+                throw new ArgumentException("Id de l'employé invalide.", nameof(id));
 
-            // Vérifier l'existence avant suppression
-            var existingEmployee = await _repository.GetByIdAsync(id);
-            if (existingEmployee == null)
-            {
+            var existing = await _repository.GetByIdAsync(id);
+            if (existing == null)
                 throw new KeyNotFoundException($"Employé avec l'id {id} introuvable.");
-            }
 
             await _repository.DeleteEmployeeAsync(id);
         }
